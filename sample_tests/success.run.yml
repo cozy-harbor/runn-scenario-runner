@@ -4,6 +4,7 @@ runners:
 steps:
   - req:
       /get:
-        method: GET
+        get:
+          body: null
     test: |
       current.res.status == 200
