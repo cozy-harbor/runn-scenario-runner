@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as childProcess from 'child_process';
 import * as path from 'path';
+import * as fs from 'fs';
 
 /**
  * runn シナリオの実行（テスト実行）を担当するクラス
@@ -70,6 +71,22 @@ export class TestRunner {
 
       // runnコマンドパスの解決 (${workspaceFolder} や相対パスへの対応)
       let resolvedRunnPath = runnPath;
+
+      // デフォルトの "runn" の場合、macOS等の一般的なパスをフォールバックとして検索する
+      if (resolvedRunnPath === 'runn') {
+        const commonPaths = [
+          '/opt/homebrew/bin/runn',
+          '/usr/local/bin/runn',
+          path.join(process.env.HOME || '', 'go/bin/runn')
+        ];
+        for (const p of commonPaths) {
+          if (fs.existsSync(p)) {
+            resolvedRunnPath = p;
+            break;
+          }
+        }
+      }
+
       if (resolvedRunnPath.includes('${workspaceFolder}') && workspaceFolder) {
         resolvedRunnPath = resolvedRunnPath.replace(/\$\{workspaceFolder\}/g, workspaceFolder.uri.fsPath);
       }
@@ -91,6 +108,7 @@ export class TestRunner {
         const processPromise = new Promise<{ code: number | null; signal: string | null }>((resolve, reject) => {
           activeProcess = childProcess.spawn(resolvedRunnPath, args, {
             cwd,
+            stdio: ['ignore', 'pipe', 'pipe'],
             env: { ...process.env, FORCE_COLOR: '1' } // runn にカラー出力を強制する
           });
 
