@@ -3,7 +3,7 @@
   "displayName": "runn-scenario-runner",
   "description": "VS Code extension for running runn scenario tests",
   "version": "0.0.1",
-  "publisher": "your-publisher-name",
+  "publisher": "cozy-harbor",
   "license": "MIT",
   "repository": {
     "type": "git",
