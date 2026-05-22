@@ -7,8 +7,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/runn-scenario-runner"
+    "url": "git+https://github.com/cozy-harbor/runn-scenario-runner.git"
   },
+  "bugs": {
+    "url": "https://github.com/cozy-harbor/runn-scenario-runner/issues"
+  },
+  "homepage": "https://github.com/cozy-harbor/runn-scenario-runner#readme",
   "engines": {
     "vscode": "^1.107.0"
   },
