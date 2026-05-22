@@ -1,0 +1,76 @@
+{
+  "name": "runn-scenario-runner",
+  "displayName": "runn-scenario-runner",
+  "description": "VS Code extension for running runn scenario tests",
+  "version": "0.0.1",
+  "publisher": "your-publisher-name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/runn-scenario-runner"
+  },
+  "engines": {
+    "vscode": "^1.107.0"
+  },
+  "categories": [
+    "Testing"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/*.run.yml",
+    "workspaceContains:**/runbook.yml",
+    "onCommand:runn-scenario-runner.activate"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "runn-scenario-runner.activate",
+        "title": "runn: Activate Test Explorer"
+      }
+    ],
+    "configuration": {
+      "title": "runn Scenario Runner",
+      "properties": {
+        "runn.path": {
+          "type": "string",
+          "default": "runn",
+          "description": "Path to the runn CLI binary (e.g., /usr/local/bin/runn or just runn if it's in your PATH)."
+        },
+        "runn.extraArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Extra arguments to pass to the runn run command."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "bun run package",
+    "compile": "bun run check-types && bun run lint && bun esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "bun esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "bun run check-types && bun run lint && bun esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "bun run compile-tests && bun run compile && bun run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.107.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "typescript-eslint": "^8.56.1",
+    "eslint": "^9.39.3",
+    "esbuild": "^0.27.3",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.9.3",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
