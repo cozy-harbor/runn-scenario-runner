@@ -39,3 +39,7 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to Open VSX
+        run: bunx ovsx publish *.vsix -p ${{ secrets.OVSX_PAT }}
+

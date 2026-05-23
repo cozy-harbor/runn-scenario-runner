@@ -2,6 +2,8 @@
 
 `runn-scenario-runner` is a VS Code extension to discover, run, and manage scenario tests using **`runn`** (by k1LoW) directly inside VS Code's native Testing UI (Test Explorer).
 
+Available on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=cozy-harbor.runn-scenario-runner) and [Open VSX Registry](https://open-vsx.org/extension/cozy-harbor/runn-scenario-runner).
+
 ---
 
 > 🇯🇵 **[日本語の説明はこちら](#日本語-japanese)** (Japanese documentation is available below)
@@ -91,6 +93,8 @@ brew install k1low/tap/runn
 # 日本語 (Japanese)
 
 `runn-scenario-runner` は、YAML でシナリオテストを記述できるツール **`runn`** (k1LoW氏作) を VS Code の標準テストインターフェース (Testing API) から直接実行・管理するための拡張機能です。
+
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=cozy-harbor.runn-scenario-runner) および [Open VSX Registry](https://open-vsx.org/extension/cozy-harbor/runn-scenario-runner) からインストールしてご利用いただけます。
 
 ## 🚀 主な機能
 

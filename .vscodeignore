@@ -16,8 +16,7 @@ bin/**
 sample_tests/**
 GEMINI.md
 .env
-publishing_guide.md
-docs/*
+docs/**
 .github/**
 
 
