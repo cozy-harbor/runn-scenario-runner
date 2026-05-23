@@ -69,11 +69,13 @@ export class TestRunner {
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(test.uri);
       const cwd = workspaceFolder ? workspaceFolder.uri.fsPath : undefined;
 
-      // runnコマンドパスの解決 (${workspaceFolder} や相対パスへの対応)
-      let resolvedRunnPath = runnPath;
+      // 1. まず、コマンドパスをスペースでパースしてメインコマンドと引数に分解する
+      const runnCommandParts = runnPath.trim().split(/\s+/);
+      let mainCommand = runnCommandParts[0] || 'runn';
+      const commandArgs = runnCommandParts.slice(1);
 
-      // デフォルトの "runn" の場合、macOS等の一般的なパスをフォールバックとして検索する
-      if (resolvedRunnPath === 'runn') {
+      // 2. メインコマンドがデフォルトの "runn" の場合、macOS等の一般的なパスをフォールバックとして検索する
+      if (mainCommand === 'runn') {
         const commonPaths = [
           '/opt/homebrew/bin/runn',
           '/usr/local/bin/runn',
@@ -81,32 +83,46 @@ export class TestRunner {
         ];
         for (const p of commonPaths) {
           if (fs.existsSync(p)) {
-            resolvedRunnPath = p;
+            mainCommand = p;
             break;
           }
         }
       }
 
-      if (resolvedRunnPath.includes('${workspaceFolder}') && workspaceFolder) {
-        resolvedRunnPath = resolvedRunnPath.replace(/\$\{workspaceFolder\}/g, workspaceFolder.uri.fsPath);
+      // 3. メインコマンドに対するパス解決 (${workspaceFolder} や相対パスへの対応)
+      if (mainCommand.includes('${workspaceFolder}') && workspaceFolder) {
+        mainCommand = mainCommand.replace(/\$\{workspaceFolder\}/g, workspaceFolder.uri.fsPath);
       }
 
-      if (!path.isAbsolute(resolvedRunnPath) && (resolvedRunnPath.includes('/') || resolvedRunnPath.includes('\\')) && workspaceFolder) {
-        resolvedRunnPath = path.resolve(workspaceFolder.uri.fsPath, resolvedRunnPath);
+      if (!path.isAbsolute(mainCommand) && (mainCommand.includes('/') || mainCommand.includes('\\')) && workspaceFolder) {
+        mainCommand = path.resolve(workspaceFolder.uri.fsPath, mainCommand);
+      }
+
+      // 4. その他の引数に含まれる ${workspaceFolder} も解決する (Docker マウント設定などのため)
+      const resolvedCommandArgs = commandArgs.map(arg => {
+        if (arg.includes('${workspaceFolder}') && workspaceFolder) {
+          return arg.replace(/\$\{workspaceFolder\}/g, workspaceFolder.uri.fsPath);
+        }
+        return arg;
+      });
+
+      // 相対パスへの変換
+      let relativeFilePath = filePath;
+      if (workspaceFolder) {
+        relativeFilePath = path.relative(workspaceFolder.uri.fsPath, filePath);
       }
 
       // 実行コマンドの引数を組み立てる
-      // 例: runn run <filepath> [extraArgs...]
-      const args = ['run', filePath, ...extraArgs];
+      const args = [...resolvedCommandArgs, 'run', relativeFilePath, ...extraArgs];
 
       // 開始ログを出力 (ANSI エスケープコードでシアン色)
       run.appendOutput(`\r\n\x1b[36m[runn] テストを開始します: ${test.label}\x1b[0m\r\n`);
-      run.appendOutput(`\x1b[90m$ ${resolvedRunnPath} ${args.join(' ')}\x1b[0m\r\n\r\n`);
+      run.appendOutput(`\x1b[90m$ ${mainCommand} ${args.join(' ')}\x1b[0m\r\n\r\n`);
 
       try {
         // 非同期に runn を起動
         const processPromise = new Promise<{ code: number | null; signal: string | null }>((resolve, reject) => {
-          activeProcess = childProcess.spawn(resolvedRunnPath, args, {
+          activeProcess = childProcess.spawn(mainCommand, args, {
             cwd,
             stdio: ['ignore', 'pipe', 'pipe'],
             env: { ...process.env, FORCE_COLOR: '1' } // runn にカラー出力を強制する

@@ -47,6 +47,16 @@
           },
           "default": [],
           "description": "Extra arguments to pass to the runn run command."
+        },
+        "runn.testDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "Directory containing the scenario files (e.g., 'sample_tests'). If specified, all .yml and .yaml files in this directory will be detected as tests."
+        },
+        "runn.testFilePattern": {
+          "type": "string",
+          "default": "**/{*.run.yml,runbook.yml}",
+          "description": "Glob pattern to detect test files when runn.testDirectory is not specified."
         }
       }
     }

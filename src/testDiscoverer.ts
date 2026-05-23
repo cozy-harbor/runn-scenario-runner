@@ -7,6 +7,7 @@ import * as fs from 'fs';
  */
 export class TestDiscoverer {
   private watcher: vscode.FileSystemWatcher | undefined;
+  private disposables: vscode.Disposable[] = [];
 
   constructor(private controller: vscode.TestController) {}
 
@@ -18,21 +19,51 @@ export class TestDiscoverer {
     await this.discoverAllTests();
 
     // 2. ファイル変更を監視するウォッチャーを設定
-    // *.run.yml と runbook.yml を対象にする
-    this.watcher = vscode.workspace.createFileSystemWatcher('**/{*.run.yml,runbook.yml}');
+    const pattern = this.getWatcherPattern();
+    this.watcher = vscode.workspace.createFileSystemWatcher(pattern);
+    this.disposables.push(this.watcher);
 
-    this.watcher.onDidCreate(uri => this.createOrUpdateTest(uri));
-    this.watcher.onDidChange(uri => this.createOrUpdateTest(uri));
-    this.watcher.onDidDelete(uri => this.deleteTest(uri));
+    this.watcher.onDidCreate(uri => this.createOrUpdateTest(uri), null, this.disposables);
+    this.watcher.onDidChange(uri => this.createOrUpdateTest(uri), null, this.disposables);
+    this.watcher.onDidDelete(uri => this.deleteTest(uri), null, this.disposables);
+
+    // 3. 設定変更のイベントも監視する (テストディレクトリ設定が変更されたら再スキャン)
+    const configListener = vscode.workspace.onDidChangeConfiguration(async e => {
+      if (e.affectsConfiguration('runn.testDirectory') || e.affectsConfiguration('runn.testFilePattern')) {
+        this.deactivate();
+        this.controller.items.forEach(item => this.controller.items.delete(item.id));
+        await this.activate();
+      }
+    });
+    this.disposables.push(configListener);
+  }
+
+  /**
+   * 検出パターンの取得
+   */
+  private getWatcherPattern(): string {
+    const config = vscode.workspace.getConfiguration('runn');
+    const testDir = config.get<string>('testDirectory') || '';
+    const filePattern = config.get<string>('testFilePattern') || '**/{*.run.yml,runbook.yml}';
+
+    if (testDir) {
+      // 末尾のスラッシュを削除して glob パターンを形成
+      const cleanDir = testDir.trim().replace(/[\\/]$/, '');
+      if (cleanDir === '.' || cleanDir === './' || cleanDir === '') {
+        return '**/*.{yml,yaml}';
+      }
+      return `${cleanDir}/**/*.{yml,yaml}`;
+    }
+    return filePattern;
   }
 
   /**
    * ウォッチャーのリソースを解放する
    */
   public deactivate() {
-    if (this.watcher) {
-      this.watcher.dispose();
-    }
+    this.disposables.forEach(d => d.dispose());
+    this.disposables = [];
+    this.watcher = undefined;
   }
 
   /**
@@ -43,9 +74,10 @@ export class TestDiscoverer {
       return;
     }
 
+    const filePattern = this.getWatcherPattern();
     for (const folder of vscode.workspace.workspaceFolders) {
       // フォルダ内の対象ファイルを検索
-      const pattern = new vscode.RelativePattern(folder, '**/{*.run.yml,runbook.yml}');
+      const pattern = new vscode.RelativePattern(folder, filePattern);
       const uris = await vscode.workspace.findFiles(pattern);
 
       for (const uri of uris) {
