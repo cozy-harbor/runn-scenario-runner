@@ -30,8 +30,38 @@
       {
         "command": "runn-scenario-runner.activate",
         "title": "runn: Activate Test Explorer"
+      },
+      {
+        "command": "runn-scenario-runner.runCurrentFile",
+        "title": "runn: Run Current Scenario",
+        "icon": "$(play)"
       }
     ],
+    "keybindings": [
+      {
+        "command": "runn-scenario-runner.runCurrentFile",
+        "key": "cmd+alt+r",
+        "mac": "cmd+alt+r",
+        "win": "ctrl+alt+r",
+        "when": "editorLangId == yaml"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "runn-scenario-runner.runCurrentFile",
+          "when": "resourceLangId == yaml",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "runn-scenario-runner.runCurrentFile",
+          "when": "resourceLangId == yaml",
+          "group": "testing"
+        }
+      ]
+    },
     "configuration": {
       "title": "runn Scenario Runner",
       "properties": {

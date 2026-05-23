@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { TestDiscoverer } from './testDiscoverer';
 import { TestRunner } from './testRunner';
+import { RunnCodeLensProvider } from './codeLensProvider';
 
 let discoverer: TestDiscoverer | undefined;
 
@@ -33,6 +34,49 @@ export function activate(context: vscode.ExtensionContext) {
     true // デフォルトのプロファイルとして設定
   );
   context.subscriptions.push(runProfile);
+
+  // 5. CodeLensProvider を yaml 言語に対して登録
+  const codeLensProvider = vscode.languages.registerCodeLensProvider(
+    { language: 'yaml' },
+    new RunnCodeLensProvider()
+  );
+  context.subscriptions.push(codeLensProvider);
+
+  // 6. 現在のエディタファイルを実行するコマンドの登録
+  const runCurrentFileCmd = vscode.commands.registerCommand(
+    'runn-scenario-runner.runCurrentFile',
+    async (uri?: vscode.Uri) => {
+      const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
+      if (!targetUri) {
+        vscode.window.showWarningMessage('実行可能なファイルが開かれていません。');
+        return;
+      }
+
+      // YAMLファイルであるか簡易確認
+      if (!targetUri.path.endsWith('.yml') && !targetUri.path.endsWith('.yaml')) {
+        vscode.window.showWarningMessage('YAMLファイル以外はテスト実行できません。');
+        return;
+      }
+
+      const id = targetUri.toString();
+      let testItem = controller.items.get(id);
+
+      // コントローラーにアイテムがなければその場で作成
+      if (!testItem) {
+        const filePath = targetUri.fsPath;
+        const fileBasename = filePath.split(/[\\/]/).pop() || filePath;
+        testItem = controller.createTestItem(id, fileBasename, targetUri);
+        controller.items.add(testItem);
+      }
+
+      // キャンセル用トークンソースを作成して実行
+      const tokenSource = new vscode.CancellationTokenSource();
+      const request = new vscode.TestRunRequest([testItem]);
+
+      await runner.runHandler(request, tokenSource.token);
+    }
+  );
+  context.subscriptions.push(runCurrentFileCmd);
 
   // 手動有効化用のコマンド登録
   const activateCmd = vscode.commands.registerCommand('runn-scenario-runner.activate', () => {
