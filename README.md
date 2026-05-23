@@ -34,8 +34,26 @@ You can customize the extension via VS Code settings:
 
 | Setting Key | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `runn.path` | `string` | `"runn"` | Path to the `runn` CLI binary. Supports absolute paths, relative paths, and `${workspaceFolder}` variables. (e.g., `${workspaceFolder}/bin/runn`) |
+| `runn.path` | `string` | `"runn"` | Path to the `runn` CLI binary. Supports absolute paths, relative paths, and `${workspaceFolder}` variables. Can also accept wrapper commands like `docker container run`. (e.g., `docker container run --rm -v ${workspaceFolder}:/books -w /books ghcr.io/k1low/runn:latest`) |
 | `runn.extraArgs` | `array` | `[]` | Extra arguments to pass to the `runn run` command. (e.g., `["--debug", "--verbose"]`) |
+| `runn.testDirectory` | `string` | `""` | Subdirectory containing scenario files (e.g., `"test"`). If specified, all `.yml` and `.yaml` files inside this directory will be scanned as tests. Use `"."` to target the workspace root. |
+| `runn.testFilePattern` | `string` | `**/{*.run.yml,runbook.yml}` | Glob pattern to discover test files when `runn.testDirectory` is empty. |
+
+### 🐳 Running via Docker
+If you want to run `runn` using a Docker container, you can configure the `runn.path` setting with your Docker run command chain.
+
+Here is a recommended configuration in `.vscode/settings.json` (assuming you mount your workspace directory):
+```json
+{
+    "runn.path": "docker container run --rm -v ${workspaceFolder}:/books -w /books ghcr.io/k1low/runn:latest",
+    "runn.testDirectory": "."
+}
+```
+- **`-v ${workspaceFolder}:/books`**: Mounts your local workspace directory to `/books` inside the container.
+- **`-w /books`**: Sets the working directory inside the container to `/books`.
+- **`"runn.testDirectory": "."`**: Targets `.yml` / `.yaml` files from the workspace root.
+
+*Note: Since the extension executes scenarios using relative paths, the mounted workspace files inside the container will align perfectly.*
 
 ---
 
@@ -92,8 +110,26 @@ VS Code の設定画面から以下のオプションをカスタマイズでき
 
 | 設定キー | 型 | デフォルト値 | 説明 |
 | :--- | :--- | :--- | :--- |
-| `runn.path` | `string` | `"runn"` | `runn` 実行バイナリへのパス。絶対パス、相対パス、および `${workspaceFolder}` 変数が使用可能です。（例: `${workspaceFolder}/bin/runn`） |
+| `runn.path` | `string` | `"runn"` | `runn` 実行バイナリへのパス。絶対パス、相対パス、および `${workspaceFolder}` 変数が使用可能です。また、`docker container run` のような起動コマンドをそのまま記述することも可能です。（例: `docker container run --rm -v ${workspaceFolder}:/books -w /books ghcr.io/k1low/runn:latest`） |
 | `runn.extraArgs` | `array` | `[]` | `runn run` コマンドに渡す追加の引数のリスト。（例: `["--debug", "--verbose"]`） |
+| `runn.testDirectory` | `string` | `""` | シナリオファイルを格納する特定のサブディレクトリ（例: `"test"`）。指定すると、そのフォルダ内のすべての `.yml`, `.yaml` ファイルがテストとして自動検出されます。ワークスペース直下を対象にする場合は `"."` を指定します。 |
+| `runn.testFilePattern` | `string` | `**/{*.run.yml,runbook.yml}` | `runn.testDirectory` が未指定の場合に、テストファイルを自動検出するための glob パターン。 |
+
+### 🐳 Docker 経由での実行
+Docker コンテナ内の `runn` を使用してテストを実行したい場合は、`runn.path` に Docker の起動コマンドを設定することができます。
+
+推奨される設定例（`.vscode/settings.json`）：
+```json
+{
+    "runn.path": "docker container run --rm -v ${workspaceFolder}:/books -w /books ghcr.io/k1low/runn:latest",
+    "runn.testDirectory": "."
+}
+```
+- **`-v ${workspaceFolder}:/books`**: ローカルのワークスペースフォルダをコンテナ内の `/books` にマウントします。
+- **`-w /books`**: コンテナ内の作業ディレクトリを `/books` に指定します。
+- **`"runn.testDirectory": "."`**: ワークスペース直下の `.yml` / `.yaml` ファイルをテスト対象にします。
+
+*※拡張機能が自動でパスを相対パス（例: `success.yml`）に解決してコンテナに引き渡すため、マウントされた環境でも矛盾なく正常にテストが実行されます。*
 
 ## 📋 前提条件 (Prerequisites)
 
