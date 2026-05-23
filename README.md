@@ -26,6 +26,12 @@
 4. **Test Cancellation**
    - Safely stop active test runs and kill the underlying `runn` processes by clicking the stop button.
 
+5. **Editor Integrations (YAML Files)**
+   - **CodeLens**: Renders a clickable `▶ Run Scenario` link at the top (line 0) of any YAML file to execute it immediately.
+   - **Editor Title Button**: Adds a play icon button at the top-right toolbar of the editor when editing a YAML file.
+   - **Context Menu**: Adds `runn: Run Current Scenario` to the right-click context menu of YAML editors.
+   - **Keyboard Shortcut**: Run the active scenario with `cmd+alt+r` (macOS) or `ctrl+alt+r` (Windows/Linux).
+
 ---
 
 ## 🛠 Configurations
@@ -103,6 +109,12 @@ brew install k1low/tap/runn
 
 4. **テストのキャンセル・停止 (Cancellation)**
    - 実行中に VS Code の停止ボタンを押すことで、現在実行中の `runn` プロセスを安全に終了させることができます。
+
+5. **エディタ連携機能 (YAML ファイル)**
+   - **CodeLens**: YAML ファイルの最上部（0行目）に `▶ Run Scenario` リンクを表示し、ワンクリックでそのシナリオを実行できます。
+   - **エディタタイトルボタン**: YAML ファイルを編集している際、エディタ右上のツールバーに「再生」アイコンボタンが表示されます。
+   - **コンテキストメニュー**: エディタ内を右クリックした際のメニューに `runn: Run Current Scenario` が追加されます。
+   - **キーボードショートカット**: `cmd+alt+r` (macOS) / `ctrl+alt+r` (Windows/Linux) で、現在開いているエディタのシナリオテストを即座に実行できます。
 
 ## 🛠 設定項目 (Configurations)
 
