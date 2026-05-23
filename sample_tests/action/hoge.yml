@@ -1,0 +1,8 @@
+desc: Dummy action scenario (Should not be detected)
+runners:
+  req: https://httpbin.org
+steps:
+  - req:
+      /get:
+        get:
+          body: null
