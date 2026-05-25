@@ -84,6 +84,14 @@ brew install k1low/tap/runn
 
 ---
 
+## ☕ Support
+
+If you find this extension helpful, please consider supporting its development!
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-ffdd00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/cozy_harbor)
+
+---
+
 ## 📝 License
 
 [MIT License](LICENSE)
@@ -162,6 +170,12 @@ brew install k1low/tap/runn
 2. 検出されたテストシナリオが表示されます。
 3. 再生アイコンをクリックして実行します。
 4. テストログを見るには、テストアイテムをダブルクリックするか、エディタに表示される「Show Output」をクリックします。
+
+## ☕ 開発の支援 (Support)
+
+もしこの拡張機能がお役に立ちましたら、継続的な開発支援をご検討いただけますと幸いです！
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-ffdd00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/cozy_harbor)
 
 ## 📝 ライセンス (License)
 
