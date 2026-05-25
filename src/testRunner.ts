@@ -56,7 +56,7 @@ export class TestRunner {
       run.started(test);
 
       // 設定から runn バイナリのパスと追加引数を取得
-      const config = vscode.workspace.getConfiguration('runn');
+      const config = vscode.workspace.getConfiguration('runn', test.uri);
       const runnPath = config.get<string>('path') || 'runn';
       const extraArgs = config.get<string[]>('extraArgs') || [];
 

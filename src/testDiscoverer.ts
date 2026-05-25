@@ -6,7 +6,7 @@ import * as fs from 'fs';
  * VS Code の TestController に登録・同期するクラス
  */
 export class TestDiscoverer {
-  private watcher: vscode.FileSystemWatcher | undefined;
+  private watchers: vscode.FileSystemWatcher[] = [];
   private disposables: vscode.Disposable[] = [];
 
   constructor(private controller: vscode.TestController) {}
@@ -18,14 +18,21 @@ export class TestDiscoverer {
     // 1. 初期スキャンを実行して既存のファイルを検出
     await this.discoverAllTests();
 
-    // 2. ファイル変更を監視するウォッチャーを設定
-    const pattern = this.getWatcherPattern();
-    this.watcher = vscode.workspace.createFileSystemWatcher(pattern);
-    this.disposables.push(this.watcher);
+    // 2. ファイル変更を監視するウォッチャーを設定 (ワークスペースフォルダーごとに構築)
+    if (vscode.workspace.workspaceFolders) {
+      for (const folder of vscode.workspace.workspaceFolders) {
+        const filePattern = this.getWatcherPattern(folder.uri);
+        const relativePattern = new vscode.RelativePattern(folder, filePattern);
+        const watcher = vscode.workspace.createFileSystemWatcher(relativePattern);
 
-    this.watcher.onDidCreate(uri => this.createOrUpdateTest(uri), null, this.disposables);
-    this.watcher.onDidChange(uri => this.createOrUpdateTest(uri), null, this.disposables);
-    this.watcher.onDidDelete(uri => this.deleteTest(uri), null, this.disposables);
+        watcher.onDidCreate(uri => this.createOrUpdateTest(uri), null, this.disposables);
+        watcher.onDidChange(uri => this.createOrUpdateTest(uri), null, this.disposables);
+        watcher.onDidDelete(uri => this.deleteTest(uri), null, this.disposables);
+
+        this.watchers.push(watcher);
+        this.disposables.push(watcher);
+      }
+    }
 
     // 3. 設定変更のイベントも監視する (テストディレクトリ設定が変更されたら再スキャン)
     const configListener = vscode.workspace.onDidChangeConfiguration(async e => {
@@ -39,17 +46,18 @@ export class TestDiscoverer {
   }
 
   /**
-   * 検出パターンの取得
+   * 検出パターンの取得 (特定リソースのスコープに対応)
    */
-  private getWatcherPattern(): string {
-    const config = vscode.workspace.getConfiguration('runn');
+  private getWatcherPattern(uri?: vscode.Uri): string {
+    const config = vscode.workspace.getConfiguration('runn', uri);
     const testDir = config.get<string>('testDirectory') || '';
     const filePattern = config.get<string>('testFilePattern') || '**/{*.run.yml,runbook.yml}';
 
     if (testDir) {
-      // 末尾のスラッシュを削除して glob パターンを形成
-      const cleanDir = testDir.trim().replace(/[\\/]$/, '');
-      if (cleanDir === '.' || cleanDir === './' || cleanDir === '') {
+      // 行頭の ./ や .\ 、および末尾のスラッシュを削除して glob パターンを形成
+      let cleanDir = testDir.trim().replace(/[\\/]$/, '');
+      cleanDir = cleanDir.replace(/^\.[\\/]/, '');
+      if (cleanDir === '.' || cleanDir === '') {
         return '**/*.{yml,yaml}';
       }
       return `${cleanDir}/**/*.{yml,yaml}`;
@@ -63,7 +71,7 @@ export class TestDiscoverer {
   public deactivate() {
     this.disposables.forEach(d => d.dispose());
     this.disposables = [];
-    this.watcher = undefined;
+    this.watchers = [];
   }
 
   /**
@@ -74,8 +82,8 @@ export class TestDiscoverer {
       return;
     }
 
-    const filePattern = this.getWatcherPattern();
     for (const folder of vscode.workspace.workspaceFolders) {
+      const filePattern = this.getWatcherPattern(folder.uri);
       // フォルダ内の対象ファイルを検索
       const pattern = new vscode.RelativePattern(folder, filePattern);
       const uris = await vscode.workspace.findFiles(pattern);
