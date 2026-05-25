@@ -2,7 +2,7 @@
   "name": "runn-scenario-runner",
   "displayName": "runn-scenario-runner",
   "description": "VS Code extension for running runn scenario tests",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "cozy-harbor",
   "license": "MIT",
   "repository": {
