@@ -68,6 +68,7 @@
         "runn.path": {
           "type": "string",
           "default": "runn",
+          "scope": "resource",
           "description": "Path to the runn CLI binary (e.g., /usr/local/bin/runn or just runn if it's in your PATH)."
         },
         "runn.extraArgs": {
@@ -76,16 +77,19 @@
             "type": "string"
           },
           "default": [],
+          "scope": "resource",
           "description": "Extra arguments to pass to the runn run command."
         },
         "runn.testDirectory": {
           "type": "string",
           "default": "",
+          "scope": "resource",
           "description": "Directory containing the scenario files (e.g., 'sample_tests'). If specified, all .yml and .yaml files in this directory will be detected as tests."
         },
         "runn.testFilePattern": {
           "type": "string",
           "default": "**/{*.run.yml,runbook.yml}",
+          "scope": "resource",
           "description": "Glob pattern to detect test files when runn.testDirectory is not specified."
         }
       }
