@@ -59,14 +59,17 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       const id = targetUri.toString();
-      let testItem = controller.items.get(id);
+      let testItem = findTestItem(controller.items, id);
 
-      // コントローラーにアイテムがなければその場で作成
+      // コントローラーにアイテムがなければ、discoverer を通じてツリー構造に登録する
+      if (!testItem && discoverer) {
+        await discoverer.discoverTest(targetUri);
+        testItem = findTestItem(controller.items, id);
+      }
+
       if (!testItem) {
-        const filePath = targetUri.fsPath;
-        const fileBasename = filePath.split(/[\\/]/).pop() || filePath;
-        testItem = controller.createTestItem(id, fileBasename, targetUri);
-        controller.items.add(testItem);
+        vscode.window.showWarningMessage('テスト項目が見つからないか、ツリーへの追加に失敗しました。');
+        return;
       }
 
       // キャンセル用トークンソースを作成して実行
@@ -92,4 +95,21 @@ export function deactivate() {
   if (discoverer) {
     discoverer.deactivate();
   }
+}
+
+/**
+ * TestItemCollection 内を再帰的に走査し、ID に一致する TestItem を探索する
+ */
+function findTestItem(items: vscode.TestItemCollection, id: string): vscode.TestItem | undefined {
+  let item = items.get(id);
+  if (item) {
+    return item;
+  }
+  for (const [_, child] of items) {
+    item = findTestItem(child.children, id);
+    if (item) {
+      return item;
+    }
+  }
+  return undefined;
 }

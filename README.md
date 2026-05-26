@@ -12,10 +12,10 @@ Available on [Visual Studio Marketplace](https://marketplace.visualstudio.com/it
 
 ## 🚀 Features
 
-1. **Auto-Discovery**
-   - Automatically scans your workspace for `**/*.run.yml` and `**/runbook.yml` files and lists them in the Testing sidebar.
+1. **Auto-Discovery & Tree View**
+   - Automatically scans your workspace for `**/*.run.yml` and `**/runbook.yml` files and displays them in the Testing sidebar in a folder-based tree structure.
    - Refreshes in real-time when files are added, changed, or deleted.
-   - Parses the scenario file's root `desc` field and displays it next to the file name in the Test Explorer tree.
+   - Parses the scenario file's root `desc` field and displays it next to the file name.
 
 2. **Integration with Test Explorer**
    - Run individual scenarios or a whole folder of tests with a single click.
@@ -106,8 +106,8 @@ If you find this extension helpful, please consider supporting its development!
 
 ## 🚀 主な機能
 
-1. **テストの自動検出 (Auto-Discovery)**
-   - ワークスペース内の `**/*.run.yml` および `**/runbook.yml` ファイルを自動的にスキャンし、VS Code の「テスト」サイドバーに階層表示します。
+1. **テストの自動検出とツリー表示 (Auto-Discovery & Tree View)**
+   - ワークスペース内の `**/*.run.yml` および `**/runbook.yml` ファイルを自動的にスキャンし、実際のフォルダ・ディレクトリ構造をそのまま反映したツリー形式で VS Code の「テスト」サイドバーに表示します。
    - ファイルの追加・削除・変更もリアルタイムに反映されます。
    - シナリオファイルの `desc` フィールドを解析し、ツリー表示のラベルの横にわかりやすく表示します。
 
