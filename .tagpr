@@ -1,2 +1,4 @@
 [tagpr]
 versionFile = package.json
+majorLabels = major,release:major
+minorLabels = minor,release:minor
