@@ -20,4 +20,6 @@ docs/**
 .github/**
 Dockerfile
 .antigravitycli/**
+.tagpr
+
 
