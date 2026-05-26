@@ -1,0 +1,10 @@
+desc: HTTP GET Request scenario (Success)
+runners:
+  req: https://httpbin.org
+steps:
+  - req:
+      /get:
+        get:
+          body: null
+    test: |
+      current.res.status == 200
