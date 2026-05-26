@@ -4,6 +4,9 @@ All notable changes to the "runn-scenario-runner" extension will be documented i
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.0.7](https://github.com/cozy-harbor/runn-scenario-runner/compare/v0.0.6...v0.0.7) - 2026-05-26
+- fix(ci): use PERSONAL_ACCESS_TOKEN in tagpr to trigger release by @cozy-harbor in https://github.com/cozy-harbor/runn-scenario-runner/pull/18
+
 ## [v0.0.6](https://github.com/cozy-harbor/runn-scenario-runner/compare/v0.0.5...v0.0.6) - 2026-05-26
 - docs: update CHANGELOG.md for versions 0.0.1 to 0.0.5 by @cozy-harbor in https://github.com/cozy-harbor/runn-scenario-runner/pull/12
 - chore: update GEMINI.md rules for release CHANGELOG update by @cozy-harbor in https://github.com/cozy-harbor/runn-scenario-runner/pull/13
