@@ -4,6 +4,13 @@ All notable changes to the "runn-scenario-runner" extension will be documented i
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v0.0.6](https://github.com/cozy-harbor/runn-scenario-runner/compare/v0.0.5...v0.0.6) - 2026-05-26
+- docs: update CHANGELOG.md for versions 0.0.1 to 0.0.5 by @cozy-harbor in https://github.com/cozy-harbor/runn-scenario-runner/pull/12
+- chore: update GEMINI.md rules for release CHANGELOG update by @cozy-harbor in https://github.com/cozy-harbor/runn-scenario-runner/pull/13
+- docs: add Buy Me a Coffee support links by @cozy-harbor in https://github.com/cozy-harbor/runn-scenario-runner/pull/14
+- ci: automate release and tagging using Songmu/tagpr by @cozy-harbor in https://github.com/cozy-harbor/runn-scenario-runner/pull/16
+- feat: support tree view in VS Code Test Explorer by @cozy-harbor in https://github.com/cozy-harbor/runn-scenario-runner/pull/15
+
 ## [0.0.5] - 2026-05-25
 
 ### Added
