@@ -18,9 +18,9 @@ export class TestRunner {
 
     // 実行対象のテストを決定する
     if (request.include) {
-      request.include.forEach(test => queue.push(test));
+      request.include.forEach(test => this.collectTests(test, queue));
     } else {
-      this.controller.items.forEach(test => queue.push(test));
+      this.controller.items.forEach(test => this.collectTests(test, queue));
     }
 
     // 除外対象のテストをフィルタリングする
@@ -170,5 +170,18 @@ export class TestRunner {
     }
 
     run.end();
+  }
+
+  /**
+   * テストアイテムを再帰的に走査し、実行可能なテスト（YAML葉ノード）のみをキューに追加する
+   */
+  private collectTests(item: vscode.TestItem, queue: vscode.TestItem[]) {
+    if (item.children.size > 0) {
+      item.children.forEach(child => this.collectTests(child, queue));
+    } else {
+      if (item.uri && (item.uri.path.endsWith('.yml') || item.uri.path.endsWith('.yaml'))) {
+        queue.push(item);
+      }
+    }
   }
 }

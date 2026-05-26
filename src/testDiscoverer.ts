@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * ワークスペース内の runn シナリオファイル (*.run.yml, runbook.yml) を検出し、
@@ -120,6 +121,123 @@ export class TestDiscoverer {
   }
 
   /**
+   * 指定された URI のファイルを TestItem として登録または更新する (外部呼出用)
+   */
+  public async discoverTest(uri: vscode.Uri) {
+    await this.createOrUpdateTest(uri);
+  }
+
+  /**
+   * 指定された URI のファイルの親ディレクトリ階層に対応する TestItemCollection を取得または作成する
+   */
+  private getOrCreateAncestorItems(uri: vscode.Uri): vscode.TestItemCollection {
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
+    if (!workspaceFolder) {
+      return this.controller.items;
+    }
+
+    const relativePath = path.relative(workspaceFolder.uri.fsPath, path.dirname(uri.fsPath));
+    if (relativePath === '' || relativePath === '.') {
+      // ワークスペースフォルダ直下の場合
+      if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 1) {
+        // マルチフォルダの場合はワークスペースフォルダのノードが親
+        const wsItem = this.getOrCreateWorkspaceFolderItem(workspaceFolder);
+        return wsItem.children;
+      } else {
+        // シングルフォルダの場合は controller.items が親
+        return this.controller.items;
+      }
+    }
+
+    // パスを分解
+    const parts = relativePath.split(/[\\/]/).filter(p => p !== '' && p !== '.');
+
+    let currentCollection: vscode.TestItemCollection;
+    let parentUri: vscode.Uri;
+
+    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 1) {
+      const wsItem = this.getOrCreateWorkspaceFolderItem(workspaceFolder);
+      currentCollection = wsItem.children;
+      parentUri = workspaceFolder.uri;
+    } else {
+      currentCollection = this.controller.items;
+      parentUri = workspaceFolder.uri;
+    }
+
+    for (const part of parts) {
+      parentUri = vscode.Uri.file(path.join(parentUri.fsPath, part));
+      const id = parentUri.toString();
+      let item = currentCollection.get(id);
+      if (!item) {
+        item = this.controller.createTestItem(id, part, parentUri);
+        currentCollection.add(item);
+      }
+      currentCollection = item.children;
+    }
+
+    return currentCollection;
+  }
+
+  /**
+   * ワークスペースフォルダに対応する TestItem を取得または作成する
+   */
+  private getOrCreateWorkspaceFolderItem(folder: vscode.WorkspaceFolder): vscode.TestItem {
+    const id = folder.uri.toString();
+    let item = this.controller.items.get(id);
+    if (!item) {
+      item = this.controller.createTestItem(id, folder.name, folder.uri);
+      this.controller.items.add(item);
+    }
+    return item;
+  }
+
+  /**
+   * 空になった親フォルダ用の TestItem を再帰的に削除する
+   */
+  private cleanUpEmptyAncestors(uri: vscode.Uri) {
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
+    if (!workspaceFolder) {
+      return;
+    }
+
+    const relativePath = path.relative(workspaceFolder.uri.fsPath, path.dirname(uri.fsPath));
+    if (relativePath === '' || relativePath === '.') {
+      if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 1) {
+        const wsId = workspaceFolder.uri.toString();
+        const wsItem = this.controller.items.get(wsId);
+        if (wsItem && wsItem.children.size === 0) {
+          this.controller.items.delete(wsId);
+        }
+      }
+      return;
+    }
+
+    const parts = relativePath.split(/[\\/]/).filter(p => p !== '' && p !== '.');
+    let currentDirPath = path.dirname(uri.fsPath);
+
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const dirUri = vscode.Uri.file(currentDirPath);
+      const dirId = dirUri.toString();
+      const parentCollection = this.getOrCreateAncestorItems(dirUri);
+      
+      const item = parentCollection.get(dirId);
+      if (item && item.children.size === 0) {
+        parentCollection.delete(dirId);
+      }
+
+      currentDirPath = path.dirname(currentDirPath);
+    }
+
+    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 1) {
+      const wsId = workspaceFolder.uri.toString();
+      const wsItem = this.controller.items.get(wsId);
+      if (wsItem && wsItem.children.size === 0) {
+        this.controller.items.delete(wsId);
+      }
+    }
+  }
+
+  /**
    * 指定された URI のファイルを TestItem として登録または更新する
    */
   private async createOrUpdateTest(uri: vscode.Uri) {
@@ -131,16 +249,16 @@ export class TestDiscoverer {
     const desc = this.extractDescription(filePath);
     const label = desc ? `${fileBasename} (${desc})` : fileBasename;
 
-    // すでに登録されているかチェック
-    let testItem = this.controller.items.get(id);
+    const parentCollection = this.getOrCreateAncestorItems(uri);
+    let testItem = parentCollection.get(id);
 
     if (testItem) {
       // 存在する場合はラベルとURIを更新
       testItem.label = label;
     } else {
-      // 新規作成して TestController に追加
+      // 新規作成して親コレクションに追加
       testItem = this.controller.createTestItem(id, label, uri);
-      this.controller.items.add(testItem);
+      parentCollection.add(testItem);
     }
   }
 
@@ -149,6 +267,8 @@ export class TestDiscoverer {
    */
   private deleteTest(uri: vscode.Uri) {
     const id = uri.toString();
-    this.controller.items.delete(id);
+    const parentCollection = this.getOrCreateAncestorItems(uri);
+    parentCollection.delete(id);
+    this.cleanUpEmptyAncestors(uri);
   }
 }
